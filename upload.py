@@ -95,10 +95,14 @@ pb_string = batch.SerializeToString()
 
 signed_pb = sign(pb_string, AES_KEY)
 
+headers = {
+  'Content-type': 'application/x-protobuf',
+  'X-Hello-Sense-Id' : DEVICE_ID
+}
 
 #sys.exit(1)
 while True:
-  resp = requests.post(ENDPOINT + 'in/sense/batch',headers={'Content-type': 'application/x-protobuf'},data=signed_pb)
+  resp = requests.post(ENDPOINT + 'in/sense/batch',headers=headers,data=signed_pb)
   print resp.raw	
   print resp.headers
   print resp.status_code
