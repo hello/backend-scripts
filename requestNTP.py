@@ -10,6 +10,7 @@ MSB0_BASE_TIME = 2085978496000L
 MSB1_BASE_TIME = -2208988800000L
 
 ENDPOINT = "http://127.0.0.1:1111/"
+#ENDPOINT = "http://time.hello.is:80/" #Research Server
 
 print ENDPOINT 
 
@@ -72,7 +73,7 @@ headers = {
 
 #sys.exit(1)
 while True:
-  resp = requests.post(ENDPOINT + 'time/', headers=headers, data=signed_pb)
+  resp = requests.post(ENDPOINT, headers=headers, data=signed_pb)
   print "**** RESPONSE ****"
   print resp.raw	
   print resp.headers
