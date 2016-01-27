@@ -4,6 +4,10 @@ import time
 import sys
 import signing
 import ntp_pb2
+import numpy as np
+
+MSB0_BASE_TIME = 2085978496000L
+MSB1_BASE_TIME = -2208988800000L
 
 ENDPOINT = "http://127.0.0.1:1111/"
 
@@ -14,8 +18,6 @@ AES_KEY = "0C95235EDF61C28FDDF5971C148BA9A2"
 
 #DEVICE_ID = "0000000000000000"
 #AES_KEY = "31323334353637383931323334353637" #default key
-
-
 
 # Reference Timestamp: Time when the system clock was last set or
 # corrected, in NTP timestamp format.
@@ -28,9 +30,32 @@ AES_KEY = "0C95235EDF61C28FDDF5971C148BA9A2"
 #
 # Transmit Timestamp (xmt): Time at the server when the response left
 # for the client, in NTP timestamp format.
+
+def unixTimestampToInt64NTP (timestamp):
+    if (int(timestamp - (MSB1_BASE_TIME / 1000)) & 0x80000000L) == 0:
+        timestamp -= (MSB0_BASE_TIME / 1000)
+    else:
+        timestamp -= (MSB1_BASE_TIME / 1000)
+    fractional = timestamp - int(timestamp)
+    int_value = np.int64(np.int32(timestamp) * 2**32) + np.int64((fractional * 2**32))
+    return int_value
+
+
+def int64NTPToUnixTimestamp (value):
+    seconds = long(value / 2**32) & 0xffffffffL
+    fraction = int(1000 * (value & 0xffffffffL) / 0x100000000L)
+    if (seconds & 0x80000000L) == 0:
+      return float(MSB0_BASE_TIME + (seconds * 1000) + fraction) / 1000.0
+    else:
+      return float(MSB1_BASE_TIME + (seconds * 1000) + fraction) / 1000.0
+
+ntp3HrsAgo = unixTimestampToInt64NTP(time.time() - (3 * 60 * 60))
+ntpNowAsInt = unixTimestampToInt64NTP(time.time())
+# sys.exit(1)
+
 timePacket = ntp_pb2.NTPDataPacket()
-timePacket.reference_ts = 1053843538
-timePacket.origin_ts = 1453843538
+timePacket.reference_ts = ntp3HrsAgo
+timePacket.origin_ts = ntpNowAsInt
 
 pb_string = timePacket.SerializeToString()
 signed_pb = signing.sign(pb_string, AES_KEY)
@@ -65,6 +90,8 @@ while True:
 
   print '-' * 10
   print timeResp
+  print "Diff between Origin and Tx (in secs):"
+  print int64NTPToUnixTimestamp(timeResp.transmit_ts) - int64NTPToUnixTimestamp(timeResp.origin_ts)
   print '-' * 10
   time.sleep(1)
   break
