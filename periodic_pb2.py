@@ -18,7 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='periodic.proto',
   package='',
-  serialized_pb=_b('\n\x0eperiodic.proto\"\xf2\x02\n\rperiodic_data\x12\x11\n\tunix_time\x18\x01 \x01(\x05\x12\r\n\x05light\x18\x02 \x01(\x05\x12\x13\n\x0btemperature\x18\x03 \x01(\x05\x12\x10\n\x08humidity\x18\x04 \x01(\x05\x12\x0c\n\x04\x64ust\x18\x05 \x01(\x05\x12\x19\n\x11light_variability\x18\x08 \x01(\x05\x12\x16\n\x0elight_tonality\x18\t \x01(\x05\x12\x18\n\x10\x64ust_variability\x18\r \x01(\x05\x12\x10\n\x08\x64ust_max\x18\x0e \x01(\x05\x12\x10\n\x08\x64ust_min\x18\x0f \x01(\x05\x12\x12\n\nwave_count\x18\x10 \x01(\x05\x12\x12\n\nhold_count\x18\x11 \x01(\x05\x12\x1e\n\x16\x61udio_num_disturbances\x18\x12 \x01(\x05\x12(\n audio_peak_disturbance_energy_db\x18\x13 \x01(\x05\x12\'\n\x1f\x61udio_peak_background_energy_db\x18\x14 \x01(\x05\"\xfd\x02\n\x15\x62\x61tched_periodic_data\x12\x1c\n\x04\x64\x61ta\x18\x01 \x03(\x0b\x32\x0e.periodic_data\x12\x11\n\tdevice_id\x18\x02 \x02(\t\x12\x18\n\x10\x66irmware_version\x18\x03 \x02(\x05\x12\x18\n\x10uptime_in_second\x18\x04 \x01(\x05\x12\x16\n\x0e\x63onnected_ssid\x18\x07 \x01(\t\x12\x15\n\rring_time_ack\x18\t \x01(\t\x12\x36\n\x04scan\x18\n \x03(\x0b\x32(.batched_periodic_data.wifi_access_point\x1a\x97\x01\n\x11wifi_access_point\x12\x0c\n\x04ssid\x18\x01 \x01(\t\x12\x0c\n\x04rssi\x18\x02 \x01(\x05\x12\x45\n\x07\x61ntenna\x18\x03 \x01(\x0e\x32\x34.batched_periodic_data.wifi_access_point.AntennaType\"\x1f\n\x0b\x41ntennaType\x12\x07\n\x03IFA\x10\x01\x12\x07\n\x03PCB\x10\x02\x42-\n\x1a\x63om.hello.suripu.api.inputB\x0f\x44\x61taInputProtos')
+  serialized_pb=_b('\n\x0eperiodic.proto\"\x90\x03\n\rperiodic_data\x12\x11\n\tunix_time\x18\x01 \x01(\x05\x12\r\n\x05light\x18\x02 \x01(\x05\x12\x13\n\x0btemperature\x18\x03 \x01(\x05\x12\x10\n\x08humidity\x18\x04 \x01(\x05\x12\x0c\n\x04\x64ust\x18\x05 \x01(\x05\x12\x19\n\x11light_variability\x18\x08 \x01(\x05\x12\x16\n\x0elight_tonality\x18\t \x01(\x05\x12\x18\n\x10\x64ust_variability\x18\r \x01(\x05\x12\x10\n\x08\x64ust_max\x18\x0e \x01(\x05\x12\x10\n\x08\x64ust_min\x18\x0f \x01(\x05\x12\x12\n\nwave_count\x18\x10 \x01(\x05\x12\x12\n\nhold_count\x18\x11 \x01(\x05\x12\x1e\n\x16\x61udio_num_disturbances\x18\x12 \x01(\x05\x12(\n audio_peak_disturbance_energy_db\x18\x13 \x01(\x05\x12\'\n\x1f\x61udio_peak_background_energy_db\x18\x14 \x01(\x05\x12\x1c\n\x14\x61udio_peak_energy_db\x18\x15 \x01(\x05\"\x98\x03\n\x15\x62\x61tched_periodic_data\x12\x1c\n\x04\x64\x61ta\x18\x01 \x03(\x0b\x32\x0e.periodic_data\x12\x11\n\tdevice_id\x18\x02 \x02(\t\x12\x18\n\x10\x66irmware_version\x18\x03 \x02(\x05\x12\x18\n\x10uptime_in_second\x18\x04 \x01(\x05\x12\x16\n\x0e\x63onnected_ssid\x18\x07 \x01(\t\x12\x15\n\rring_time_ack\x18\t \x01(\t\x12\x36\n\x04scan\x18\n \x03(\x0b\x32(.batched_periodic_data.wifi_access_point\x12\x19\n\x11messages_in_queue\x18\x0b \x01(\x05\x1a\x97\x01\n\x11wifi_access_point\x12\x0c\n\x04ssid\x18\x01 \x01(\t\x12\x0c\n\x04rssi\x18\x02 \x01(\x05\x12\x45\n\x07\x61ntenna\x18\x03 \x01(\x0e\x32\x34.batched_periodic_data.wifi_access_point.AntennaType\"\x1f\n\x0b\x41ntennaType\x12\x07\n\x03IFA\x10\x01\x12\x07\n\x03PCB\x10\x02\x42-\n\x1a\x63om.hello.suripu.api.inputB\x0f\x44\x61taInputProtos')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -41,8 +41,8 @@ _BATCHED_PERIODIC_DATA_WIFI_ACCESS_POINT_ANTENNATYPE = _descriptor.EnumDescripto
   ],
   containing_type=None,
   options=None,
-  serialized_start=742,
-  serialized_end=773,
+  serialized_start=799,
+  serialized_end=830,
 )
 _sym_db.RegisterEnumDescriptor(_BATCHED_PERIODIC_DATA_WIFI_ACCESS_POINT_ANTENNATYPE)
 
@@ -159,6 +159,13 @@ _PERIODIC_DATA = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='audio_peak_energy_db', full_name='periodic_data.audio_peak_energy_db', index=15,
+      number=21, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -171,7 +178,7 @@ _PERIODIC_DATA = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=19,
-  serialized_end=389,
+  serialized_end=419,
 )
 
 
@@ -215,8 +222,8 @@ _BATCHED_PERIODIC_DATA_WIFI_ACCESS_POINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=622,
-  serialized_end=773,
+  serialized_start=679,
+  serialized_end=830,
 )
 
 _BATCHED_PERIODIC_DATA = _descriptor.Descriptor(
@@ -275,6 +282,13 @@ _BATCHED_PERIODIC_DATA = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='messages_in_queue', full_name='batched_periodic_data.messages_in_queue', index=7,
+      number=11, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -286,8 +300,8 @@ _BATCHED_PERIODIC_DATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=392,
-  serialized_end=773,
+  serialized_start=422,
+  serialized_end=830,
 )
 
 _BATCHED_PERIODIC_DATA_WIFI_ACCESS_POINT.fields_by_name['antenna'].enum_type = _BATCHED_PERIODIC_DATA_WIFI_ACCESS_POINT_ANTENNATYPE
