@@ -1,0 +1,244 @@
+#!/usr/local/bin/bash
+#
+# Dev Server Deploy script
+# should be run with sudo
+# (installed in /usr/local/bin)
+
+JAR_DIR="/usr/local/hello"
+CONFIG_DIR="/usr/local/etc/hello"
+
+err() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@" >&2
+}
+
+get_s3_file() {
+  if [ -z "$1" ]
+    then
+    err "Error in S3 file list to download. Please check script."
+    exit 1
+  fi
+  
+  extension=${1: -3}
+  destination=$JAR_DIR
+  
+  if [[ $extension == "yml" ]]; then
+    destination=$CONFIG_DIR
+  fi
+
+  aws s3 cp "$1" "$destination"
+
+  if [[ "$?" -ne 0 ]]; then
+    err "Failed to download ${config_path}${config_file}"
+    exit 1
+  fi
+}
+
+get_file_set() {
+  declare -a argAry1=("${!1}")
+  for s3file in "${argAry1[@]}" ; do
+    S3PATH=${s3file}
+    get_s3_file $S3PATH
+  done    
+}
+
+vercomp () {
+    if [[ $1 == $2 ]]
+    then
+        return 0
+    fi
+    local IFS=.
+    local i ver1=($1) ver2=($2)
+    # fill empty fields in ver1 with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
+    do
+        ver1[i]=0
+    done
+    for ((i=0; i<${#ver1[@]}; i++))
+    do
+        if [[ -z ${ver2[i]} ]]
+        then
+            # fill empty fields in ver2 with zeros
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        then
+            return 1
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        then
+            return 2
+        fi
+    done
+    return 0
+}
+
+get_latest_version() {
+  local latest="0.0"
+  files=$(aws s3 ls $1)
+  pattern="[0-9\.]+"
+  for word in $files
+  do
+    [[ $word =~ $pattern ]]
+    if [[ ${BASH_REMATCH[0]} ]]
+    then
+        match="${match:+}${BASH_REMATCH[0]}"
+    fi
+    vercomp $match $latest
+    compresult=$?
+    if (( compresult == 1 )); then
+      latest=$match
+    fi
+  done
+  echo $latest
+}
+
+is_running(){
+    status $1 | grep -q "^$1 start" > /dev/null
+    return $?
+}
+
+# Make sure all needed directories exist
+if [ ! -d "$JAR_DIR" ]; then
+  mkdir -p $JAR_DIR
+
+  if [[ "$?" -ne 0 ]]; then
+   err "Failed to create JAR directory: '$JAR_DIR' 
+Please create this directory before continuing."
+    exit 1
+  fi
+fi
+if [ ! -d "$CONFIG_DIR" ]; then
+  mkdir -p $CONFIG_DIR
+
+  if [[ "$?" -ne 0 ]]; then
+   err "Failed to create Config directory: '$CONFIG_DIR' 
+Please create this directory before continuing."
+    exit 1
+  fi
+fi
+
+
+echo "
+   ___             ___           __         
+  / _ \___ _  __  / _ \___ ___  / /__  __ __
+ / // / -_) |/ / / // / -_) _ \/ / _ \/ // /
+/____/\__/|___/ /____/\__/ .__/_/\___/\_, / 
+                        /_/          /___/  "
+
+# Select application for deployment 
+
+# Map of application name -> S3 path from which versions can be obtained
+APPLICATIONS=(
+  "suripu-app|s3://hello-deploy/configs/com/hello/suripu/suripu-app/"
+  "suripu-queue|s3://hello-deploy/configs/com/hello/suripu/suripu-queue/"
+  "suripu-admin|s3://hello-deploy/packages/com/hello/suripu/suripu-admin/"
+  "suripu-service|s3://hello-deploy/packages/com/hello/suripu/suripu-service/"
+  "suripu-workers|s3://hello-deploy/packages/com/hello/suripu/suripu-workers/"
+  )
+
+echo ""
+echo "Applications Available For Deployment:"
+IDX=0
+for app in "${APPLICATIONS[@]}" ; do
+  KEY=${app%%|*}
+  echo "[$IDX] $KEY"
+  ((IDX+=1))
+done
+
+read -p 'Select an application: ' APPSEL
+NUMAPPS=${#APPLICATIONS[@]}-1
+
+if (($APPSEL < 0)) || (($APPSEL > $NUMAPPS)); then
+  err "Incorrect App Selection"
+  exit 1
+fi
+
+selApp=${APPLICATIONS[$APPSEL]%%|*}
+echo "$selApp was selected for deployment"
+
+#
+
+# Download needed files
+echo ""
+echo "Preparing to Deploy $selApp..."
+VERPATH=${APPLICATIONS[$APPSEL]#*|}
+
+latest=$(get_latest_version "$VERPATH")
+echo "Latest Available Version: $latest"
+read -p "Please Enter The Version To Deploy:[$latest] " APPVERSION
+if [ -z "$APPVERSION" ]; then
+  APPVERSION=$latest
+fi
+
+case $selApp in
+  suripu-app)
+    APPFILES=( 
+      "s3://hello-deploy/configs/com/hello/suripu/suripu-app/$APPVERSION/suripu-app.staging.yml"
+      "s3://hello-maven/release/com/hello/suripu/suripu-app/$APPVERSION/suripu-app-$APPVERSION.jar"
+    )
+    ;;
+  suripu-queue)
+    APPFILES=( 
+      "s3://hello-deploy/configs/com/hello/suripu/suripu-queue/$APPVERSION/suripu-queue.staging.yml"
+      "s3://hello-maven/release/com/hello/suripu/suripu-queue/$APPVERSION/suripu-queue-$APPVERSION.jar"
+    )
+    ;;
+  suripu-admin)
+    APPFILES=( 
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-admin/$APPVERSION/suripu-admin.staging.yml"
+      "s3://hello-maven/release/com/hello/suripu/suripu-admin/$APPVERSION/suripu-admin-$APPVERSION.jar"
+    )
+    ;;
+  suripu-service)
+    APPFILES=( 
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-service/$APPVERSION/suripu-service.staging.yml"
+      "s3://hello-maven/release/com/hello/suripu/suripu-service/$APPVERSION/suripu-service-$APPVERSION.jar"
+    )
+    ;;
+  suripu-workers)
+    APPFILES=( 
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/pill/pill.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/pill/pill_save_ddb.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/alarm/alarm_worker.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/sense/sense_save.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/sense/sense_save_ddb.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/logs/index_logs_worker.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/insights/insights_generator.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/push/push-notifications.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/sense/sense_last_seen.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/logs/timeline_logs.staging.yml"
+      "s3://hello-maven/release/com/hello/suripu/suripu-workers/$APPVERSION/suripu-workers-$APPVERSION.jar"
+    )
+    ;;
+  *)
+    err "Missing Application Files for $selApp"
+    ;;
+esac
+
+# Actually download the files  
+echo "Downloading Files:"
+get_file_set APPFILES[@]
+
+#Update symbolic links
+echo "Updating symbolic link for $selApp..."
+rm "/usr/local/bin/$selApp.jar"
+ln -s "/usr/local/hello/$selApp-$APPVERSION.jar" "/usr/local/bin/$selApp.jar"
+
+#Restart the application
+if is_running $selApp; then 
+  echo "Restarting $selApp..."
+  restart $selApp
+  if [[ "$?" -ne 0 ]]; then
+    err "Failed to restart $selApp. Check your permissions."
+    exit 1
+  fi
+else 
+  echo "Starting $selApp...";
+  start $selApp
+  if [[ "$?" -ne 0 ]]; then
+    err "Failed to start $selApp. Check your permissions."
+    exit 1
+  fi
+fi
+
+exit 0

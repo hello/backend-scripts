@@ -1,12 +1,12 @@
-import requests
-import json
-import sys
-import periodic_pb2
-import time
-import sys
 import hashlib
-import sync_response_pb2
+import requests
+import sys
+import sys
+import time
+
+import periodic_pb2
 import signing
+import sync_response_pb2
 
 ENDPOINT = "http://127.0.0.1:5555/" if len(sys.argv) == 1 else "https://sense-in.hello.is/"
 #ENDPOINT = "https://sense-in.hello.is/"

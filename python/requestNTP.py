@@ -1,10 +1,11 @@
+import numpy as np
 import requests
 import sys
-import time
 import sys
-import signing
+import time
+
 import ntp_pb2
-import numpy as np
+import signing
 
 MSB0_BASE_TIME = 2085978496000L
 MSB1_BASE_TIME = -2208988800000L
