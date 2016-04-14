@@ -8,10 +8,10 @@ import periodic_pb2
 import signing
 import sync_response_pb2
 
-ENDPOINT = "http://127.0.0.1:5555/" if len(sys.argv) == 1 else "https://sense-in.hello.is/"
+#ENDPOINT = "http://127.0.0.1:5555/" if len(sys.argv) == 1 else "https://sense-in.hello.is/"
 #ENDPOINT = "https://sense-in.hello.is/"
 
-#ENDPOINT = "https://dev-in.hello.is/"
+ENDPOINT = "https://dev-in.hello.is/"
 
 print ENDPOINT
 
