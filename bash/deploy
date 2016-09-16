@@ -1,8 +1,4 @@
-#!/usr/local/bin/bash
-#
-# Dev Server Deploy script
-# should be run with sudo
-# (installed in /usr/local/bin)
+#!/bin/bash
 
 JAR_DIR="/usr/local/hello"
 CONFIG_DIR="/usr/local/etc/hello"
@@ -102,7 +98,7 @@ if [ ! -d "$JAR_DIR" ]; then
   mkdir -p $JAR_DIR
 
   if [[ "$?" -ne 0 ]]; then
-   err "Failed to create JAR directory: '$JAR_DIR' 
+   err "Failed to create JAR directory: '$JAR_DIR' \n
 Please create this directory before continuing."
     exit 1
   fi
@@ -111,29 +107,23 @@ if [ ! -d "$CONFIG_DIR" ]; then
   mkdir -p $CONFIG_DIR
 
   if [[ "$?" -ne 0 ]]; then
-   err "Failed to create Config directory: '$CONFIG_DIR' 
+   err "Failed to create Config directory: '$CONFIG_DIR' \n
 Please create this directory before continuing."
     exit 1
   fi
 fi
 
 
-echo "
-   ___             ___           __         
-  / _ \___ _  __  / _ \___ ___  / /__  __ __
- / // / -_) |/ / / // / -_) _ \/ / _ \/ // /
-/____/\__/|___/ /____/\__/ .__/_/\___/\_, / 
-                        /_/          /___/  "
-
 # Select application for deployment 
 
 # Map of application name -> S3 path from which versions can be obtained
 APPLICATIONS=(
-  "suripu-app|s3://hello-deploy/configs/com/hello/suripu/suripu-app/"
+  "suripu-app|s3://hello-deploy/packages/com/hello/suripu/suripu-app/"
   "suripu-queue|s3://hello-deploy/configs/com/hello/suripu/suripu-queue/"
   "suripu-admin|s3://hello-deploy/packages/com/hello/suripu/suripu-admin/"
   "suripu-service|s3://hello-deploy/packages/com/hello/suripu/suripu-service/"
   "suripu-workers|s3://hello-deploy/packages/com/hello/suripu/suripu-workers/"
+  "supichi|s3://hello-deploy/packages/is/hello/speech/supichi/"
   )
 
 echo ""
@@ -144,8 +134,8 @@ for app in "${APPLICATIONS[@]}" ; do
   echo "[$IDX] $KEY"
   ((IDX+=1))
 done
-
-read -p 'Select an application: ' APPSEL
+echo "Select an application:"
+read APPSEL
 NUMAPPS=${#APPLICATIONS[@]}-1
 
 if (($APPSEL < 0)) || (($APPSEL > $NUMAPPS)); then
@@ -156,16 +146,15 @@ fi
 selApp=${APPLICATIONS[$APPSEL]%%|*}
 echo "$selApp was selected for deployment"
 
-#
-
 # Download needed files
 echo ""
 echo "Preparing to Deploy $selApp..."
 VERPATH=${APPLICATIONS[$APPSEL]#*|}
 
 latest=$(get_latest_version "$VERPATH")
-echo "Latest Available Version: $latest"
-read -p "Please Enter The Version To Deploy:[$latest] " APPVERSION
+echo "Latest Version: $latest"
+echo "Please Enter The Version To Deploy:[$latest]"
+read APPVERSION
 if [ -z "$APPVERSION" ]; then
   APPVERSION=$latest
 fi
@@ -173,7 +162,7 @@ fi
 case $selApp in
   suripu-app)
     APPFILES=( 
-      "s3://hello-deploy/configs/com/hello/suripu/suripu-app/$APPVERSION/suripu-app.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-app/$APPVERSION/suripu-app.staging.yml"
       "s3://hello-maven/release/com/hello/suripu/suripu-app/$APPVERSION/suripu-app-$APPVERSION.jar"
     )
     ;;
@@ -197,17 +186,23 @@ case $selApp in
     ;;
   suripu-workers)
     APPFILES=( 
-      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/pill/pill.staging.yml"
       "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/pill/pill_save_ddb.staging.yml"
       "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/alarm/alarm_worker.staging.yml"
-      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/sense/sense_save.staging.yml"
       "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/sense/sense_save_ddb.staging.yml"
       "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/logs/index_logs_worker.staging.yml"
       "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/insights/insights_generator.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/insights/aggstats_generator.staging.yml"
       "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/push/push-notifications.staging.yml"
       "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/sense/sense_last_seen.staging.yml"
       "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/logs/timeline_logs.staging.yml"
+      "s3://hello-deploy/packages/com/hello/suripu/suripu-workers/$APPVERSION/fanout/sense_stream_fanout.staging.yml"
       "s3://hello-maven/release/com/hello/suripu/suripu-workers/$APPVERSION/suripu-workers-$APPVERSION.jar"
+    )
+    ;;
+  supichi)
+    APPFILES=( 
+      "s3://hello-deploy/packages/is/hello/speech/supichi/$APPVERSION/supichi.staging.yml"
+      "s3://hello-maven/release/is/hello/speech/supichi/$APPVERSION/supichi-$APPVERSION.jar"
     )
     ;;
   *)
